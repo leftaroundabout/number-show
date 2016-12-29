@@ -14,6 +14,7 @@ module Text.Show.Number where
 
 import Lens.Micro
 import Lens.Micro.TH
+import Control.Arrow
 
 type Δ n = n
 
@@ -24,6 +25,17 @@ data NumShowComponents n = NumShowComponents {
     , _remainder :: n
     } deriving (Show)
 makeLenses ''NumShowComponents
+
+errorLtdShow :: RealFloat n => Δ n -> n -> ShowS
+errorLtdShow δ = preShowNum δ 10 3 >>> asm
+ where asm nsc = shows (nsc^.scaledIntPart)
+                   . case nsc^.significantDecimals of
+                       [] -> id
+                       ds  -> ('.':) . flip (foldr shows) ds
+                   . case nsc^.scaleExponent of
+                       0 -> id
+                       e -> ('e':) . shows e
+
 
 preShowNum :: RealFloat n =>
            Δ n       -- ^ Uncertainty allowance
