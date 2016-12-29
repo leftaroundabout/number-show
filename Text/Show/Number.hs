@@ -53,6 +53,8 @@ preShowNum δ b emin 𝑥
        μ = 𝑏^^exponent
        fIntPart = floor $ 𝑥/μ
        (intPart, sigDigits) = case sigDigs of
+           [hd] | uncrtExp >= exponent
+                               -> (fIntPart + (2*hd)`div`b, [])
            (hd:hds) | hd >= b  -> (fIntPart+1, 0:hds)
            hds                 -> (fIntPart  ,   hds)
        (sigDigs, rmd) = go (exponent - uncrtExp - 1) (𝑥/μ - fromIntegral fIntPart)
