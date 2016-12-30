@@ -19,7 +19,8 @@ import Control.Arrow
 type Δ n = n
 
 data NumShowComponents n = NumShowComponents {
-      _scaleExponent :: Int
+      _isNegative :: Bool
+    , _scaleExponent :: Int
     , _scaledIntPart :: Int
     , _significantDecimals :: [Int]
     , _remainder :: n
@@ -28,7 +29,8 @@ makeLenses ''NumShowComponents
 
 errorLtdShow :: RealFloat n => Δ n -> n -> ShowS
 errorLtdShow δ = preShowNum δ 10 3 >>> asm
- where asm nsc = shows (nsc^.scaledIntPart)
+ where asm nsc = (if nsc^.isNegative then ('-':) else id)
+                   . shows (nsc^.scaledIntPart)
                    . case nsc^.significantDecimals of
                        [] -> id
                        ds  -> ('.':) . flip (foldr shows) ds
@@ -45,9 +47,9 @@ preShowNum :: RealFloat n =>
         -> NumShowComponents n
 preShowNum δ b emin 𝑥
   | δ<0        = preShowNum (-δ) b emin 𝑥
-  | 𝑥<0        = preShowNum δ b emin (-𝑥) & scaledIntPart %~ negate
-  | 𝑥>0        = NumShowComponents exponent intPart sigDigits (rmd * 𝑏^^exponent)
-  | otherwise  = NumShowComponents 0 0 [] 𝑥
+  | 𝑥<0        = preShowNum δ b emin (-𝑥) & isNegative .~ True
+  | 𝑥>0        = NumShowComponents False exponent intPart sigDigits (rmd * 𝑏^^exponent)
+  | otherwise  = NumShowComponents False 0 0 [] 𝑥
  where exponent = closeZero emin . max uncrtExp . floor $ logBase 𝑏 𝑥
        uncrtExp = floor $ logBase 𝑏 δ
        μ = 𝑏^^exponent
