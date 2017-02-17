@@ -19,7 +19,7 @@ library
   exposed-modules:     Text.Show.Number
   -- other-modules:       
   other-extensions:    FlexibleInstances
-  build-depends:       base >=4.8 && <4.9
+  build-depends:       base >=4.8 && <5
                        , microlens >=0.4 && <0.5
                        , microlens-th
   -- hs-source-dirs:      
